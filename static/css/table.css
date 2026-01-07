@@ -1,0 +1,188 @@
+/* Lentelių stiliai */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+    font-size: var(--font-size-sm);
+    table-layout: auto;
+}
+
+th, td {
+    border: 1px solid var(--gray-300);
+    padding: var(--spacing-sm) 12px;
+    text-align: left;
+    word-break: break-word;
+}
+
+th {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+/* Lentelės eilučių stiliai */
+tbody tr:nth-child(even) {
+    background-color: var(--bg-light);
+}
+
+tbody tr:hover {
+    background-color: var(--gray-100);
+}
+
+/* Specifiniai stulpelių stiliai */
+#productsTable th.column-product-name,
+#productsTable td.column-product-name {
+    min-width: 280px;
+    width: 25%;
+}
+
+#productsTable td.column-product-name input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#productsTable th.column-excise-category,
+#productsTable td.column-excise-category {
+    min-width: 220px;
+    width: 20%;
+}
+
+#productsTable th.column-abv,
+#productsTable td.column-abv {
+    min-width: 90px;
+    width: 8%;
+    text-align: right;
+}
+
+#productsTable td.column-abv input[type="number"] {
+    text-align: right;
+}
+
+#productsTable th.column-volume,
+#productsTable td.column-volume {
+    min-width: 90px;
+    width: 8%;
+    text-align: right;
+}
+
+#productsTable td.column-volume input[type="number"] {
+    text-align: right;
+}
+
+#productsTable th.column-unit-price-discount,
+#productsTable td.column-unit-price-discount {
+    min-width: 120px;
+    width: 12%;
+    text-align: right;
+}
+
+#productsTable td.column-unit-price-discount input[type="text"] {
+    text-align: right;
+    background-color: var(--bg-light);
+}
+
+#productsTable th.column-discount,
+#productsTable td.column-discount {
+    min-width: 100px;
+    width: 10%;
+    text-align: right;
+}
+
+#productsTable td.column-discount input[type="number"] {
+    text-align: right;
+}
+
+/* Input laukeliai lentelėje */
+td input[type="text"],
+td input[type="number"],
+td select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--border-radius-sm);
+    box-sizing: border-box;
+    font-size: 0.85rem;
+}
+
+td input[type="text"]:focus,
+td input[type="number"]:focus,
+td select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+/* Select elementai lentelėje */
+td select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    background-size: 1em;
+    padding-right: 2.5rem;
+}
+
+/* Responsive lentelės */
+@media (max-width: 1200px) {
+    .preview-container {
+        overflow-x: auto;
+    }
+    
+    table {
+        min-width: 1000px;
+    }
+}
+
+@media (max-width: 768px) {
+    table {
+        font-size: var(--font-size-xs);
+    }
+    
+    th, td {
+        padding: 8px var(--spacing-sm);
+    }
+    
+    #productsTable th.column-product-name,
+    #productsTable td.column-product-name {
+        min-width: 200px;
+    }
+    
+    #productsTable th.column-excise-category,
+    #productsTable td.column-excise-category {
+        min-width: 180px;
+    }
+    
+    #productsTable th.column-unit-price-discount,
+    #productsTable td.column-unit-price-discount {
+        min-width: 100px;
+    }
+}
+
+@media (max-width: 480px) {
+    table {
+        font-size: 0.75rem;
+    }
+    
+    th, td {
+        padding: 6px 8px;
+    }
+}
+
+/* Print stiliai */
+@media print {
+    table {
+        box-shadow: none;
+    }
+    
+    th {
+        background-color: var(--primary-color) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}

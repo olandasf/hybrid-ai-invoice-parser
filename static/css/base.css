@@ -1,0 +1,132 @@
+/* Base styles - pagrindiniai stiliai */
+:root {
+    /* Spalvų kintamieji */
+    --primary-color: #007bff;
+    --primary-hover: #0056b3;
+    --success-color: #28a745;
+    --success-hover: #218838;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+    
+    /* Pilkos spalvos */
+    --gray-50: #f8f9fa;
+    --gray-100: #e9ecef;
+    --gray-200: #dee2e6;
+    --gray-300: #ced4da;
+    --gray-400: #adb5bd;
+    --gray-500: #6c757d;
+    --gray-600: #495057;
+    --gray-700: #343a40;
+    --gray-800: #212529;
+    
+    /* Fono spalvos */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f4f7f6;
+    --bg-light: #f8f9fa;
+    
+    /* Šriftai */
+    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --font-size-base: 1rem;
+    --font-size-sm: 0.9rem;
+    --font-size-xs: 0.8rem;
+    --line-height: 1.6;
+    
+    /* Tarpai */
+    --spacing-xs: 5px;
+    --spacing-sm: 10px;
+    --spacing-md: 15px;
+    --spacing-lg: 20px;
+    --spacing-xl: 30px;
+    
+    /* Border radius */
+    --border-radius-sm: 4px;
+    --border-radius: 5px;
+    --border-radius-lg: 8px;
+    --border-radius-xl: 12px;
+    
+    /* Šešėliai */
+    --shadow-sm: 0 2px 3px rgba(0,0,0,0.1);
+    --shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 2px 5px rgba(0,0,0,0.15);
+}
+
+/* Reset ir base stiliai */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    margin: 0;
+    padding: var(--spacing-lg);
+    background-color: var(--bg-secondary);
+    color: var(--gray-700);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    line-height: var(--line-height);
+}
+
+/* Tipografija */
+h1, h2, h3, h4, h5, h6 {
+    color: #2c3e50;
+    margin-top: 0;
+}
+
+h1, h2 {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+/* Konteineriai */
+.container {
+    width: 90%;
+    max-width: 700px;
+    margin: var(--spacing-lg) auto;
+    padding: var(--spacing-xl);
+    background-color: var(--bg-primary);
+    box-shadow: var(--shadow);
+    border-radius: var(--border-radius-xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.container.preview-container {
+    max-width: 95%;
+    align-items: stretch;
+}
+
+/* Animacijos */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Utility klasės */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: var(--spacing-xs); }
+.mb-2 { margin-bottom: var(--spacing-sm); }
+.mb-3 { margin-bottom: var(--spacing-md); }
+.mb-4 { margin-bottom: var(--spacing-lg); }
+.mb-5 { margin-bottom: var(--spacing-xl); }
+
+.mt-0 { margin-top: 0; }
+.mt-1 { margin-top: var(--spacing-xs); }
+.mt-2 { margin-top: var(--spacing-sm); }
+.mt-3 { margin-top: var(--spacing-md); }
+.mt-4 { margin-top: var(--spacing-lg); }
+.mt-5 { margin-top: var(--spacing-xl); }

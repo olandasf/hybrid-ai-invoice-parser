@@ -1,0 +1,11 @@
+Flask>=2.2.5
+python-dotenv
+google-cloud-documentai
+openai
+pandas
+openpyxl
+pypdf>=3.17.0
+requests
+python-docx
+docx2pdf
+reportlab

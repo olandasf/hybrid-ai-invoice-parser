@@ -1,0 +1,1119 @@
+/* styles.css - Pagrindinis stilių failas */
+/* Importuojame modulinius CSS failus */
+@import url('css/base.css');
+@import url('css/components.css');
+@import url('css/upload.css');
+@import url('css/table.css');
+
+/* Ištaisyta klaida, kuri galėjo sukelti UI problemų */
+
+/* Papildomi stiliai, kurie netelpa į modulius */
+
+.container {
+    width: 90%;
+    max-width: 700px; 
+    margin: 20px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); 
+    border-radius: 12px; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.container.preview-container {
+    max-width: 95%; /* Padidinam, kad tilptų platesnė lentelė */
+    align-items: stretch;
+}
+
+h1, h2 {
+    color: #2c3e50; 
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 30px;
+}
+
+.upload-form {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+}
+
+.file-upload-area {
+    border: 2px dashed #007bff;
+    border-radius: 8px;
+    padding: 25px;
+    text-align: center;
+    margin-bottom: 25px;
+    background-color: #f8f9fa;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    position: relative;
+}
+
+.file-upload-area.dragover {
+    background-color: #e9ecef;
+    border-color: #0056b3;
+}
+
+.file-upload-area input[type="file"] {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.file-upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #495057;
+}
+
+.file-upload-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    font-weight: 500;
+    margin-bottom: 10px;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.file-upload-button:hover {
+    background-color: #0056b3;
+}
+
+.file-upload-text {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 8px;
+}
+
+.file-name-display {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: #343a40;
+    font-style: italic;
+    word-break: break-all;
+}
+
+.form-hint {
+    display: block;
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-top: 8px;
+}
+
+.form-group {
+    width: 100%;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.form-group label {
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #34495e;
+    font-size: 1rem;
+}
+
+.upload-form input[type="number"],
+.upload-form input[type="text"] {
+    padding: 12px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 1rem;
+    background-color: #fff;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.upload-form input[type="number"]:focus,
+.upload-form input[type="text"]:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+.action-button,
+.upload-form button[type="submit"] { /* Sujungiam stilius */
+    padding: 12px 25px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    align-self: center;
+    min-width: 200px;
+    margin-top: 10px;
+}
+
+.action-button:hover,
+.upload-form button[type="submit"]:hover {
+    background-color: #218838;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}
+
+/* Stiliai rezultatų lentelei (preview.html) */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+    font-size: 0.9rem;
+    table-layout: auto; 
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px 12px;
+    text-align: left;
+    word-break: break-word; 
+}
+
+th {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+    white-space: nowrap; 
+}
+
+/* Prekės pavadinimo stulpelis */
+#productsTable th.column-product-name,
+#productsTable td.column-product-name {
+    min-width: 280px; 
+    width: 25%; 
+}
+#productsTable td.column-product-name input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Akcizo kategorijos stulpelis */
+#productsTable th.column-excise-category,
+#productsTable td.column-excise-category {
+    min-width: 220px; 
+    width: 20%;
+}
+
+/* Alkoholio % stulpelis */
+#productsTable th.column-abv,
+#productsTable td.column-abv {
+    min-width: 90px;  
+    width: 8%;       
+    text-align: right; 
+}
+#productsTable td.column-abv input[type="number"] {
+    text-align: right; 
+}
+
+/* Tūrio stulpelis */
+#productsTable th.column-volume,
+#productsTable td.column-volume {
+    min-width: 90px;
+    width: 8%;
+    text-align: right;
+}
+#productsTable td.column-volume input[type="number"] {
+    text-align: right;
+}
+
+/* Vnt. kaina su nuolaida stulpelis */
+#productsTable th.column-unit-price-discount,
+#productsTable td.column-unit-price-discount {
+    min-width: 120px;
+    width: 12%;
+    text-align: right;
+}
+#productsTable td.column-unit-price-discount input[type="text"] {
+    text-align: right;
+    background-color: #f8f9fa; /* Šviesiai pilkas fonas, nes readonly */
+}
+
+/* Nuolaidos stulpelis */
+#productsTable th.column-discount,
+#productsTable td.column-discount {
+    min-width: 100px;
+    width: 10%;
+    text-align: right;
+}
+#productsTable td.column-discount input[type="number"] {
+    text-align: right;
+}
+
+/* Lentelės eilučių stiliai */
+tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+tbody tr:hover {
+    background-color: #e9ecef;
+}
+
+/* Input laukeliai lentelėje */
+td input[type="text"],
+td input[type="number"],
+td select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 0.85rem;
+}
+
+/* Statistikos konteineris */
+.stats-container {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 700px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.stats-container h3 {
+    margin-top: 0;
+    color: #007bff;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+.stats-container p {
+    margin: 8px 0;
+    font-size: 1rem;
+    display: flex;
+    justify-content: space-between;
+}
+.stats-container strong {
+    color: #343a40;
+}
+
+/* Flash pranešimai */
+ul.flashes {
+    list-style-type: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+    width: 100%;
+}
+ul.flashes li {
+    padding: 12px 18px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    color: #fff;
+    font-weight: 500;
+    text-align: center;
+}
+ul.flashes li.error { 
+    background-color: #dc3545; 
+}
+ul.flashes li.success { 
+    background-color: #28a745; 
+}
+ul.flashes li.info { 
+    background-color: #17a2b8; 
+}
+ul.flashes li.warning { 
+    background-color: #ffc107;
+    color: #212529;
+}
+
+/* Veiksmų mygtukai */
+.action-buttons {
+    margin-top: 20px; 
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    margin-top: auto;
+    padding: 25px 0;
+    border-top: 1px solid #dee2e6;
+    width: 100%;
+    color: #6c757d;
+    background-color: #f8f9fa;
+    font-size: 0.9rem;
+}
+
+/* Responsive design - mažesniems ekranams */
+@media (max-width: 768px) {
+    .container {
+        width: 95%;
+        padding: 20px;
+    }
+    
+    .container.preview-container {
+        max-width: 100%;
+        padding: 10px;
+    }
+    
+    table {
+        font-size: 0.8rem;
+    }
+    
+    th, td {
+        padding: 8px 10px;
+    }
+    
+    #productsTable th.column-product-name,
+    #productsTable td.column-product-name {
+        min-width: 200px;
+    }
+    
+    #productsTable th.column-excise-category,
+    #productsTable td.column-excise-category {
+        min-width: 180px;
+    }
+    
+    #productsTable th.column-unit-price-discount,
+    #productsTable td.column-unit-price-discount {
+        min-width: 100px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .action-button {
+        width: 100%;
+        margin: 5px 0;
+    }
+}
+
+/* Papildomi stiliai labai mažiems ekranams */
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+    
+    h1, h2 {
+        font-size: 1.5rem;
+    }
+    
+    table {
+        font-size: 0.75rem;
+    }
+    
+    th, td {
+        padding: 6px 8px;
+    }
+}
+
+/* Print stiliai */
+@media print {
+    body {
+        background-color: white;
+        padding: 0;
+    }
+    
+    .container {
+        box-shadow: none;
+        max-width: 100%;
+        padding: 0;
+    }
+    
+    .action-buttons {
+        display: none;
+    }
+    
+    footer {
+        display: none;
+    }
+    
+    table {
+        box-shadow: none;
+    }
+    
+    th {
+        background-color: #007bff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+/* Užtikrinti, kad readonly laukeliai būtų matomi */
+input[readonly] {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}
+
+/* Select elementų stiliai */
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    background-size: 1em;
+    padding-right: 2.5rem;
+}
+
+select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+/* Animacijos */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.container {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Transporto UI elementų stiliai */
+.transport-info {
+    margin-top: 10px;
+    width: 100%;
+}
+
+.transport-hint {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 8px;
+}
+
+.transport-hint .info-icon {
+    margin-right: 8px;
+    font-size: 1rem;
+}
+
+.transport-hint .hint-text {
+    flex: 1;
+}
+
+.transport-status {
+    padding: 10px 12px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.transport-status.success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.transport-status.info {
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+}
+
+.transport-status.warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+}
+
+.transport-status .status-icon {
+    margin-right: 8px;
+    font-size: 1.1rem;
+}
+
+.transport-status .status-text {
+    flex: 1;
+}
+
+/* Tooltip stiliai */
+.tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 200px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.8rem;
+}
+
+.tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Užtikrinti, kad lentelė būtų scrollinama horizontaliai mažuose ekranuose */
+@media (max-width: 1200px) {
+    .preview-container {
+        overflow-x: auto;
+    }
+    
+    table {
+        min-width: 1000px;
+    }
+}
+
+/* Transporto informacijos sekcija preview.html */
+.transport-info-section {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.transport-info-section h3 {
+    margin-top: 0;
+    color: #007bff;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.transport-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.transport-note {
+    padding: 8px 12px;
+    background-color: #e2e3e5;
+    border: 1px solid #d6d8db;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+}
+
+.transport-note .note-icon {
+    margin-right: 8px;
+    font-size: 1rem;
+}
+
+.transport-note .note-text {
+    flex: 1;
+}
+
+/* Responsive transporto elementai */
+@media (max-width: 768px) {
+    .transport-hint {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+    
+    .transport-hint .info-icon {
+        margin-bottom: 4px;
+        margin-right: 0;
+    }
+    
+    .transport-status {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+    
+    .transport-status .status-icon {
+        margin-bottom: 4px;
+        margin-right: 0;
+    }
+    
+    .transport-info-section {
+        margin: 15px 0;
+        padding: 15px;
+    }
+    
+    .transport-details {
+        gap: 8px;
+    }
+    
+    .transport-note {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+    
+    .transport-note .note-icon {
+        margin-bottom: 4px;
+        margin-right: 0;
+    }
+}
+/* Transporto UI stiliai */
+.transport-info {
+    margin-top: 10px;
+}
+
+.transport-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    background-color: #e3f2fd;
+    border: 1px solid #bbdefb;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #1565c0;
+    margin-bottom: 8px;
+}
+
+.transport-hint .info-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.transport-hint .hint-text {
+    line-height: 1.4;
+}
+
+.transport-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.transport-status.success {
+    background-color: #e8f5e8;
+    border: 1px solid #c3e6c3;
+    color: #2e7d32;
+}
+
+.transport-status.info {
+    background-color: #e3f2fd;
+    border: 1px solid #bbdefb;
+    color: #1565c0;
+}
+
+.transport-status.warning {
+    background-color: #fff3e0;
+    border: 1px solid #ffcc02;
+    color: #f57c00;
+}
+
+.transport-status .status-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.transport-status .status-text {
+    line-height: 1.3;
+}
+
+/* Transporto informacijos sekcija preview puslapyje */
+.transport-info-section {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 20px 0;
+}
+
+.transport-info-section h3 {
+    margin: 0 0 10px 0;
+    color: #495057;
+    font-size: 1.1rem;
+}
+
+.transport-source-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.transport-source-indicator.manual {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+.transport-source-indicator.automatic {
+    background-color: #e8f5e8;
+    color: #2e7d32;
+}
+
+.transport-source-indicator.none {
+    background-color: #fff3e0;
+    color: #f57c00;
+}
+
+/* Tooltip stiliai */
+.tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 200px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 1000;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.8rem;
+    line-height: 1.3;
+}
+
+.tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Responsive transporto elementai */
+@media (max-width: 768px) {
+    .transport-hint,
+    .transport-status {
+        font-size: 0.8rem;
+        padding: 8px;
+    }
+    
+    .transport-info-section {
+        padding: 12px;
+        margin: 15px 0;
+    }
+    
+    .tooltip .tooltiptext {
+        width: 150px;
+        margin-left: -75px;
+        font-size: 0.75rem;
+    }
+}/
+* Papildomi transporto stiliai preview puslapyje */
+.transport-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.transport-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-top: 5px;
+}
+
+.transport-note .note-icon {
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.transport-note .note-text {
+    line-height: 1.3;
+}
+
+/* Statistikos sekcijos transporto elementai */
+.stats-container p {
+    margin: 8px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stats-container strong {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+/* Transporto validacijos pranešimai */
+.transport-validation {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.transport-validation.error {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.transport-validation.warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+}
+
+.transport-validation.success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+/* Responsive transporto elementai preview puslapyje */
+@media (max-width: 768px) {
+    .transport-info-section {
+        margin: 15px 0;
+    }
+    
+    .transport-details {
+        gap: 8px;
+    }
+    
+    .transport-status,
+    .transport-note {
+        font-size: 0.8rem;
+        padding: 6px 8px;
+    }
+    
+    .stats-container p {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+}
+/* 
+Banderolių sekcijos stiliai */
+.banderole-info {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.banderole-info h3 {
+    color: #495057;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+.banderole-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.banderole-stat-item {
+    background-color: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 12px 15px;
+    min-width: 200px;
+    flex: 1;
+}
+
+.banderole-stat-item strong {
+    color: #007bff;
+    font-weight: 600;
+}
+
+.current-number {
+    font-weight: bold;
+    color: #28a745;
+    margin-left: 8px;
+}
+
+.usage-info {
+    color: #6c757d;
+    font-size: 0.9em;
+    margin-left: 5px;
+}
+
+/* VMI sekcijos stiliai */
+.vmi-section {
+    background-color: #e3f2fd;
+    border: 1px solid #bbdefb;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.vmi-section h3 {
+    color: #1976d2;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+.vmi-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 15px;
+}
+
+.date-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.date-inputs label {
+    font-weight: 500;
+    color: #495057;
+    white-space: nowrap;
+}
+
+.date-inputs input[type="date"] {
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.banderole-type-select {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.banderole-type-select label {
+    font-weight: 500;
+    color: #495057;
+    white-space: nowrap;
+}
+
+.banderole-type-select select {
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: white;
+}
+
+/* Responsive dizainas banderolių sekcijoms */
+@media (max-width: 768px) {
+    .banderole-stats {
+        flex-direction: column;
+    }
+    
+    .banderole-stat-item {
+        min-width: auto;
+    }
+    
+    .vmi-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .date-inputs,
+    .banderole-type-select {
+        justify-content: space-between;
+    }
+}
+
+/* Banderolių informacijos lentelėje */
+.banderole-column {
+    background-color: #fff3cd;
+    border-left: 3px solid #ffc107;
+}
+
+.banderole-type-bac {
+    color: #721c24;
+    background-color: #f8d7da;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.85em;
+    font-weight: 500;
+}
+
+.banderole-type-aah {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.85em;
+    font-weight: 500;
+}
+
+.banderole-numbers {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    color: #495057;
+}

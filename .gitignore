@@ -1,0 +1,112 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+.venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.kiro/
+
+# Logs
+*.log
+logs/
+app_debug.log
+startup.log
+google_docai_debug.log
+clean_vmi_files.log
+output.log
+
+# Cache - contains sensitive data
+cache/
+product_cache/
+temp_data/
+.pytest_cache/
+
+# Uploads and Output - contains sensitive data
+uploads/
+output/
+Excel Suvestinės/
+
+# Environment variables - sensitive credentials
+.env
+.env.local
+.env.*.local
+
+# Google Cloud credentials - sensitive!
+*.json
+!package.json
+!package-lock.json
+
+# Tax stamp (banderole) data - sensitive
+Banderolių apskaita/
+banderoles_state.json
+
+# Personal documents
+CV/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+test_*.pdf
+integration_test.pdf
+
+# PyInstaller spec files
+*.spec
+
+# Windows startup scripts
+*.vbs
+
+# Debug/Test scripts
+calc_check.py
+check_banderoles.py
+test_invoice_extraction.py
+run_and_log.py
+run_app.ps1
+clear_all_cache.py
+clear_prod_cache.py
+image_preprocessing.py
+
+# Internal documentation (keep only README.md)
+BANDEROLIU_*.md
+DESKTOP_*.md
+EXCEL_*.md
+GALUTINIS_*.md
+KUMULIACINIO_*.md
+NAUDOTOJO_*.md
+PROJEKTO_*.md
+SISTEMOS_*.md
+
+# Test HTML templates
+templates/test.html

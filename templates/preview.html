@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rezultatai ir Eksportas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container preview-container">
+        <!-- NAVIGACIJOS MYGTUKAS GRĮŽTI Į PRADŽIĄ -->
+        <div class="navigation-section">
+            <a href="{{ url_for('main_route') }}" class="btn btn-back-home">
+                🏠 Grįžti į pradžią ir įkelti naują sąskaitą
+            </a>
+        </div>
+        
+        <h2>Prekių lentelė (galite redaguoti)</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <ul class="flashes">
+            {% for category, message in messages %}
+              <li class="{{ category if category else 'info' }}">{{ message }}</li>
+            {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+        
+        <!-- Banderolių informacija -->
+        {% if banderole_stats %}
+        <div class="banderole-info">
+            <h3>Banderolių Informacija</h3>
+            <div class="banderole-stats">
+                {% for type, stats in banderole_stats.items() %}
+                <div class="banderole-stat-item">
+                    <strong>{{ type }}</strong> ({{ stats.description }}):
+                    <span class="current-number">{{ stats.current_number }}</span>
+                    <span class="usage-info">({{ stats.usage_percentage }}% partijos)</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Kumuliacinio Excel informacija -->
+        <div class="cumulative-excel-info">
+            <h3>📊 Kumuliacinis Excel Valdymas</h3>
+            <div class="info-box">
+                <div class="info-item">
+                    <span class="info-icon">📋</span>
+                    <div class="info-content">
+                        <strong>Atskiras Excel failas:</strong> Sukuria naują failą kiekvienai sąskaitai
+                    </div>
+                </div>
+                <div class="info-item">
+                    <span class="info-icon">📊</span>
+                    <div class="info-content">
+                        <strong>Bendras Excel failas:</strong> Prideda sąskaitą kaip naują sheet į metinį failą<br>
+                        <small>📏 Sheet pavadinimas: Tiekėjas_MMdd_KiekisVnt (pvz: BSC_0105_48vnt)</small>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <span class="info-icon">📈</span>
+                    <div class="info-content">
+                        <strong>Automatinė suvestinė:</strong> Pirmas sheet su visų sąskaitų sumine informacija ir formulėmis
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Debug informacija (pašalinti production'e) -->
+        {% if products %}
+        <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; font-size: 12px;">
+            <strong>Debug:</strong> Produktų su banderolėmis: 
+            {% set banderole_count = products | selectattr('banderole_type', 'defined') | list | length %}
+            {{ banderole_count }}/{{ products|length }}
+            {% if banderole_count > 0 %}
+                (Pavyzdys: {{ products | selectattr('banderole_type', 'defined') | first | attr('banderole_type') if products | selectattr('banderole_type', 'defined') | first else 'N/A' }})
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- VMI failų generavimas -->
+        <div class="vmi-section">
+            <h3>VMI Banderolių Apskaita</h3>
+            <form id="vmiForm" method="post" action="{{ url_for('generate_vmi_route') }}" style="display: inline-block;">
+                <!-- Hidden input su produktų duomenimis -->
+                <input type="hidden" name="products_data" id="vmiProductsData" value="">
+                
+                <div class="vmi-controls">
+                    <div class="date-inputs">
+                        <label for="period_start">Laikotarpis nuo:</label>
+                        <input type="date" name="period_start" id="period_start" value="{{ default_period_start }}" required>
+                        
+                        <label for="period_end">iki:</label>
+                        <input type="date" name="period_end" id="period_end" value="{{ default_period_end }}" required>
+                    </div>
+                    
+                    <div class="banderole-type-select">
+                        <label for="banderole_type">Banderolių tipas:</label>
+                        <select name="banderole_type" id="banderole_type">
+                            <option value="BAC">BAC (Visos akcizinės prekės)</option>
+                        </select>
+                    </div>
+                    
+                    <button type="button" class="btn btn-info" onclick="prepareAndSubmitVMI()">Pridėti į VMI failus</button>
+                </div>
+            </form>
+            
+            <div class="vmi-download-section" style="margin-top: 15px;">
+                <h4>Atsisiųsti esamus VMI failus:</h4>
+                <div class="download-buttons">
+                    <a href="{{ url_for('download_vmi_file', banderole_type='BAC') }}" class="btn btn-secondary">
+                        Atsisiųsti BAC failą
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button type="button" class="btn btn-warning" id="recalculateAllButton">Perskaičiuoti lentelę</button>
+            
+            
+            
+            <!-- Excel generavimo mygtukai -->
+            <div class="excel-buttons-group">
+                <form id="excelForm" method="post" action="{{ url_for('generate_excel_route') }}" style="display: inline;">
+                    <input type="hidden" name="products_excel" id="productsInputExcel">
+                    <button type="button" class="btn btn-success" onclick="prepareAndSubmit('excelForm', 'productsInputExcel')">📄 Atskirą Excel failą</button>
+                </form>
+
+                <form id="cumulativeExcelForm" method="post" action="{{ url_for('generate_cumulative_excel_route') }}" style="display: inline;">
+                    <input type="hidden" name="products_excel" id="productsInputCumulativeExcel">
+                    <button type="button" class="btn btn-info" onclick="prepareAndSubmit('cumulativeExcelForm', 'productsInputCumulativeExcel')">📊 Pridėti į bendrą Excel</button>
+                </form>
+                
+                <a href="{{ url_for('download_cumulative_excel_route') }}" class="btn btn-outline-info">⬇️ Atsisiųsti bendrą Excel</a>
+            </div>
+
+            <form id="csvForm" method="post" action="{{ url_for('generate_csv_route') }}" style="display: inline;">
+                <input type="hidden" name="products_csv" id="productsInputCsv">
+                <button type="button" class="btn btn-primary" onclick="prepareAndSubmit('csvForm', 'productsInputCsv')">Generuoti CSV (.csv)</button>
+            </form>
+        </div>
+
+        <table border="1" id="productsTable">
+            <thead>
+                <tr>
+                    {% for header_key, header_display in column_headers_display %}
+                        <th 
+                            {% if header_key == 'name' %}class="column-product-name"{% endif %}
+                            {% if header_key == 'excise_category_key' %}class="column-excise-category"{% endif %} 
+                            {% if header_key == 'abv' %}class="column-abv"{% endif %}
+                            {% if header_key == 'discount_percentage' %}class="column-discount"{% endif %}
+                            {% if header_key == 'unit_price_with_discount' %}class="column-unit-price-discount"{% endif %}
+                        >{{ header_display }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% if products %}
+                    {% for p_item in products %}
+                    {% set current_row_index = loop.index0 %} 
+                    <tr data-id="{{ current_row_index }}">
+                        {% for key, display_name in column_headers_display %}
+                            <td 
+                                {% if key == 'name' %}class="column-product-name"{% endif %}
+                                {% if key == 'excise_category_key' %}class="column-excise-category"{% endif %}
+                                {% if key == 'abv' %}class="column-abv"{% endif %}
+                                {% if key == 'discount_percentage' %}class="column-discount"{% endif %}
+                                {% if key == 'unit_price_with_discount' %}class="column-unit-price-discount"{% endif %}
+                            >
+                                {% if key == 'excise_category_key' %} 
+                                    <select name="excise_category_key" onchange="handleCategoryChange(this, {{ current_row_index }})">
+                                        {% for cat_key, cat_label in category_labels.items() %}
+                                            <option value="{{ cat_key }}" {% if p_item.get('excise_category_key') == cat_key %}selected{% endif %}>
+                                                {{ cat_label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                {% elif key in ['volume', 'abv', 'quantity', 'unit_price', 'amount', 'name', 'discount_percentage', 'unit_price_with_discount'] %}
+                                     <input type="{{ 'number' if key != 'name' else 'text' }}" 
+                                            {% if key != 'name' and key != 'quantity' %}step="any"{% elif key == 'quantity' %}step="1"{% endif %}
+                                            value="{{ p_item[key] if p_item[key] is not none else '' }}" 
+                                            name="{{ key }}" 
+                                            onchange="markRowForRecalculation(this, {{ current_row_index }})">
+                                {% else %}
+                                    <input type="text" 
+                                           value="{{ p_item[key] if p_item[key] is not none else '' }}" 
+                                           name="{{ key }}" readonly>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr><td colspan="{{ column_headers_display|length }}">Nėra produktų duomenų.</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <!-- Transporto informacijos sekcija -->
+        {% if transport_info %}
+        <div class="transport-info-section">
+            <h3>Transporto informacija:</h3>
+            <div class="transport-details">
+                {% if transport_info.source == 'manual' %}
+                    <div class="transport-status info">
+                        <span class="status-icon">✏️</span>
+                        <span class="status-text">Naudojama įvesta transporto suma: <strong>{{ "%.2f"|format(transport_info.amount) }} EUR</strong></span>
+                    </div>
+                    {% if transport_info.auto_detected > 0 %}
+                        <div class="transport-note">
+                            <span class="note-icon">🔍</span>
+                            <span class="note-text">Sąskaitoje taip pat rastas transportas: {{ "%.2f"|format(transport_info.auto_detected) }} EUR (nepanaudotas)</span>
+                        </div>
+                    {% endif %}
+                {% elif transport_info.source == 'automatic' %}
+                    <div class="transport-status success">
+                        <span class="status-icon">✅</span>
+                        <span class="status-text">Automatiškai rastas transportas: <strong>{{ "%.2f"|format(transport_info.amount) }} EUR</strong></span>
+                    </div>
+                {% else %}
+                    <div class="transport-status warning">
+                        <span class="status-icon">⚠️</span>
+                        <span class="status-text">Transportas nerastas sąskaitoje ir neįvestas rankiniu būdu</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="stats-container">
+            <h3>Bendra statistika:</h3>
+            <p style="font-size: 1.1em; color: #007BFF;"><strong>Prekių eilučių skaičius: <span id="totalProductRows">{{ products_for_display|length }}</span></strong></p>
+            <p>Bendras prekių kiekis (vnt): <strong id="totalQuantity">0</strong></p>
+            <p>Visa pirkimo suma (€): <strong id="totalPurchaseAmount">0.00</strong></p>
+            <p>Visa pirkimo suma su nuolaida (€): <strong id="totalPurchaseAmountWithDiscount">0.00</strong></p>
+            <p>Visa akcizo suma (€): <strong id="totalExciseAmount">0.00</strong></p>
+            <p>Visa transporto suma (€): <strong id="totalTransportAmountOverall">{{ "%.2f"|format(transport_total|float) }}</strong></p>
+            <p>Paskirstyta transporto suma (€): <strong id="totalTransportDistributed">0.00</strong></p>
+            <p>Bendra savikaina be PVM (€): <strong id="totalCostWoVat">0.00</strong></p>
+            <p>Bendra savikaina su PVM (€): <strong id="totalCostWVat">0.00</strong></p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; {{ current_year }} Rolandas Fokas</p>
+    </footer>
+
+    <script>
+        // Global kintamieji JavaScript moduliams
+        window.ALL_CATEGORY_LABELS = {{ category_labels | tojson }};
+        window.TRANSPORT_TOTAL_OVERALL = parseFloat("{{ transport_total }}") || 0;
+        window.COLUMN_KEYS_FOR_JS = {{ column_keys_for_js | tojson }}; 
+
+        function prepareAndSubmit(formId, inputId) {
+            try {
+                const tableData = getCurrentTableData();
+                console.log("Ruošiami duomenys Excel/CSV generavimui:", tableData);
+                
+                if (!tableData || tableData.length === 0) {
+                    alert("Nėra duomenų eksportavimui. Patikrinkite ar lentelėje yra produktų.");
+                    return;
+                }
+                
+                const jsonData = JSON.stringify(tableData);
+                console.log("JSON duomenys:", jsonData.substring(0, 200) + "...");
+                
+                document.getElementById(inputId).value = jsonData;
+                
+                // Patikrinti ar forma egzistuoja
+                const form = document.getElementById(formId);
+                if (!form) {
+                    alert("Klaida: forma nerasta. Perkraukite puslapį ir bandykite dar kartą.");
+                    return;
+                }
+                
+                console.log("Siunčiama forma:", formId);
+                form.submit();
+                
+            } catch (error) {
+                console.error("Klaida ruošiant duomenis eksportavimui:", error);
+                alert("Klaida ruošiant duomenis eksportavimui: " + error.message);
+            }
+        }
+
+        function markRowForRecalculation(inputElement, rowIndex) { 
+            console.log("Eilutė " + rowIndex + " pakeista (lauko '" + inputElement.name + "' keitimas). Kviečiamas perskaičiavimas.");
+            setTimeout(() => recalculateRowData(rowIndex), 150); 
+        }
+        
+        function handleCategoryChange(selectElement, rowIndex) {
+            console.log("Pakeista kategorija eilutėje", rowIndex, "į raktą:", selectElement.value);
+            setTimeout(() => recalculateRowData(rowIndex), 150);
+        }
+
+        function getCurrentTableData() {
+            let allProducts = [];
+            try {
+                const table = document.getElementById("productsTable");
+                if (!table) {
+                    console.error("Lentelė #productsTable nerasta");
+                    return [];
+                }
+                
+                const rows = table.querySelectorAll("tbody tr");
+                console.log(`Rasta ${rows.length} eilučių lentelėje`);
+                
+                rows.forEach((row, index) => {
+                    // Praleisti sumų eilutes
+                    if (row.querySelector('td[colspan]')) {
+                        console.log(`Praleista eilutė ${index} (sumų eilutė)`);
+                        return;
+                    }
+                    
+                    let product = {};
+                    const inputs = row.querySelectorAll('input[name], select[name]');
+                    console.log(`Eilutėje ${index} rasta ${inputs.length} input/select elementų`);
+                    
+                    inputs.forEach(input => {
+                        if (input.name) {
+                            product[input.name] = input.value || '';
+                        }
+                    });
+                    
+                    // Patikrinti ar produktas turi bent minimalius duomenis
+                    if (product.name && product.name.trim() !== '') {
+                        allProducts.push(product);
+                        console.log(`Pridėtas produktas ${index}:`, product.name);
+                    } else {
+                        console.warn(`Praleistas produktas ${index} - nėra pavadinimo`);
+                    }
+                });
+                
+                console.log(`Iš viso surinkta ${allProducts.length} produktų`);
+                return allProducts;
+                
+            } catch (error) {
+                console.error("Klaida renkant lentelės duomenis:", error);
+                return [];
+            }
+        }
+
+        async function recalculateRowData(rowIndex) {
+            const rowElement = document.querySelector(`#productsTable tbody tr[data-id='${rowIndex}']`);
+            if (!rowElement) {
+                console.error("Nepavyko rasti eilutės su data-id: " + rowIndex);
+                return;
+            }
+            
+            // --- KLAIDOS PATAISYMAS PRASIDEDA ČIA (JavaScript) ---
+            // Siunčiame serveriui visų eilučių duomenis ir pakeistos eilutės INDEKSĄ.
+            // Serveris perskaičiuos viską, bet grąžins tik atnaujintus duomenis pakeistai eilutei.
+            console.log("Siunčiami duomenys perskaičiavimui (eilutė " + rowIndex + "):", {product_index: rowIndex, all_products: getCurrentTableData()});
+
+            try {
+                const response = await fetch("{{ url_for('recalculate_item_data') }}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_index: rowIndex, // Siunčiame eilutės indeksą
+                        transport_total: TRANSPORT_TOTAL_OVERALL,
+                        all_products: getCurrentTableData() // Siunčiame visus dabartinius duomenis
+                    }) 
+                });
+            // --- KLAIDOS PATAISYMAS BAIGIASI ČIA (JavaScript) ---
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("Klaida iš serverio (recalculate_item_data):", errorData);
+                    alert("Klaida perskaičiuojant eilutę: " + (errorData.error || response.statusText));
+                    return;
+                }
+
+                const updatedItemFromServer = await response.json();
+                console.log("Gauti atnaujinti individualūs duomenys iš serverio (eilutė " + rowIndex + "):", updatedItemFromServer);
+
+                updateTableRow(rowElement, updatedItemFromServer);
+                updateTotalStats();
+
+            } catch (error) {
+                console.error("Tinklo ar JS klaida perskaičiuojant eilutę (" + rowIndex + "):", error);
+                alert("Įvyko klaida perskaičiuojant eilutės duomenis (JS/Network).");
+            }
+        }
+
+        function updateTableRow(rowElement, updatedItemData) {
+            rowElement.querySelectorAll('input[name], select[name]').forEach(inputOrSelect => {
+                const fieldName = inputOrSelect.name;
+                if (updatedItemData.hasOwnProperty(fieldName)) {
+                    let valueToSet = updatedItemData[fieldName];
+
+                    if (inputOrSelect.tagName === 'SELECT') {
+                        inputOrSelect.value = valueToSet;
+                    } else {
+                        if (typeof valueToSet === 'number') {
+                            if (['excise_per_unit', 'transport_per_unit'].includes(fieldName)) {
+                                valueToSet = valueToSet.toFixed(4);
+                            } else if (['volume'].includes(fieldName)) {
+                                 valueToSet = valueToSet.toFixed(3);
+                            } else if (['quantity'].includes(fieldName) && Number.isInteger(valueToSet)) {
+                                valueToSet = valueToSet.toFixed(0);
+                            } else {
+                                valueToSet = valueToSet.toFixed(2);
+                            }
+                        }
+                        inputOrSelect.value = (valueToSet !== null && valueToSet !== undefined) ? valueToSet : '';
+                    }
+                }
+            });
+        }
+        
+        function updateTotalStats() {
+            let totalQuantity = 0;
+            let totalPurchaseAmount = 0;
+            let totalPurchaseAmountWithDiscount = 0;
+            let totalExciseAmount = 0;
+            let totalTransportDistributed = 0;
+            let totalCostWoVat = 0;
+            let totalCostWVat = 0;
+            let productRowCount = 0;
+
+            const rows = document.querySelectorAll("#productsTable tbody tr");
+            rows.forEach(row => {
+                if (row.querySelector('td[colspan]')) return;
+                
+                // Skaičiuojame prekių eilutes
+                productRowCount++;
+
+                totalQuantity += parseFloat(row.querySelector('input[name="quantity"]')?.value) || 0;
+                totalPurchaseAmount += parseFloat(row.querySelector('input[name="amount"]')?.value) || 0;
+                totalPurchaseAmountWithDiscount += parseFloat(row.querySelector('input[name="amount_with_discount"]')?.value) || 0;
+                totalExciseAmount += parseFloat(row.querySelector('input[name="excise_total"]')?.value) || 0;
+                totalTransportDistributed += parseFloat(row.querySelector('input[name="transport_total"]')?.value) || 0;
+                totalCostWoVat += parseFloat(row.querySelector('input[name="cost_wo_vat_total"]')?.value) || 0;
+                totalCostWVat += parseFloat(row.querySelector('input[name="cost_w_vat_total"]')?.value) || 0;
+            });
+
+            document.getElementById('totalProductRows').textContent = productRowCount;
+            document.getElementById('totalQuantity').textContent = Math.round(totalQuantity);
+            document.getElementById('totalPurchaseAmount').textContent = totalPurchaseAmount.toFixed(2);
+            document.getElementById('totalPurchaseAmountWithDiscount').textContent = totalPurchaseAmountWithDiscount.toFixed(2);
+            document.getElementById('totalExciseAmount').textContent = totalExciseAmount.toFixed(2);
+            document.getElementById('totalTransportAmountOverall').textContent = TRANSPORT_TOTAL_OVERALL.toFixed(2);
+            document.getElementById('totalTransportDistributed').textContent = totalTransportDistributed.toFixed(2);
+            document.getElementById('totalCostWoVat').textContent = totalCostWoVat.toFixed(2);
+            document.getElementById('totalCostWVat').textContent = totalCostWVat.toFixed(2);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTotalStats(); 
+
+            const recalculateAllBtn = document.getElementById('recalculateAllButton');
+            if (recalculateAllBtn) {
+                recalculateAllBtn.addEventListener('click', async function() {
+                    const allProductsData = getCurrentTableData();
+                    const transportTotal = TRANSPORT_TOTAL_OVERALL;
+
+                    console.log("Siunčiami visi duomenys perskaičiavimui ('Perskaičiuoti lentelę'):", { products: allProductsData, transport_total: transportTotal });
+
+                    try {
+                        const response = await fetch("{{ url_for('recalculate_all_products') }}", {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                products: allProductsData,
+                                transport_total: transportTotal
+                            })
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            console.error("Klaida iš serverio (recalculate_all_products):", errorData);
+                            alert("Klaida perskaičiuojant visą lentelę: " + (errorData.error || response.statusText));
+                            return;
+                        }
+
+                        const updatedProductsList = await response.json();
+                        console.log("Gautas atnaujintas produktų sąrašas:", updatedProductsList);
+
+                        updatedProductsList.forEach((updatedItem, productIndex) => {
+                            const rowElement = document.querySelector(`#productsTable tbody tr[data-id='${productIndex}']`);
+                            if (rowElement) {
+                                updateTableRow(rowElement, updatedItem);
+                            }
+                        });
+                        updateTotalStats();
+
+                    } catch (error) {
+                        console.error("Tinklo ar JS klaida perskaičiuojant visą lentelę:", error);
+                        alert("Įvyko klaida perskaičiuojant visus duomenis (JS/Network).");
+                    }
+                });
+            }
+        });
+
+        // VMI formos paruošimo funkcija
+        function prepareAndSubmitVMI() {
+            try {
+                const allProducts = getCurrentTableData();
+                console.log("Ruošiami VMI duomenys:", allProducts);
+                
+                // Įdėti produktų duomenis į hidden input
+                document.getElementById('vmiProductsData').value = JSON.stringify(allProducts);
+                
+                // Pateikti formą
+                document.getElementById('vmiForm').submit();
+                
+            } catch (error) {
+                console.error("Klaida ruošiant VMI duomenis:", error);
+                alert("Klaida ruošiant VMI duomenis: " + error.message);
+            }
+        }
+    </script>
+    <script src="{{ url_for('static', filename='js/preview.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sąskaitos įkėlimas ir analizė</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    </head>
+<body>
+    <div class="container">
+        <h1>Įkelkite sąskaitą analizei</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <ul class="flashes">
+            {% for category, message in messages %}
+              <li class="{{ category if category else 'info' }}">{{ message }}</li>
+            {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+
+        <form method="post" enctype="multipart/form-data" class="upload-form">
+            <div class="file-upload-area">
+                <input type="file" id="file" name="file" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" required onchange="updateFileName(this)">
+                <label for="file" class="file-upload-label">
+                    <span class="file-upload-button">Pasirinkti failą</span>
+                    <span class="file-upload-text">arba nutempkite failą čia</span>
+                    <span id="file-name-display" class="file-name-display">Nepasirinktas joks failas</span>
+                </label>
+                <small class="form-hint">Leidžiami formatai: PDF, PNG, JPG, Word (.doc, .docx)</small>
+            </div>
+
+            <div class="form-group">
+                <label for="transport_total" class="form-label">Transporto bendra suma (EUR):</label>
+                <input type="number" id="transport_total" name="transport_total" class="form-control" step="0.01" min="0" value="0.00" required>
+                <div class="transport-info">
+                    <div class="transport-hint">
+                        <span class="info-icon">ℹ️</span>
+                        <span class="hint-text">Jei paliksite 0.00, sistema automatiškai ieškos transporto išlaidų sąskaitoje</span>
+                    </div>
+                    <div id="transport-status" class="transport-status" style="display: none;">
+                        <!-- Transporto statuso pranešimas bus rodomas čia -->
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success">Įkelti ir analizuoti</button>
+        </form>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Rolandas Fokas</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+</body>
+</html>
