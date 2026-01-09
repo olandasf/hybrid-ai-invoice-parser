@@ -35,9 +35,53 @@ def allowed_file(filename):
 # try_convert_to_float funkcija perkelta į utils.py
 
 def apply_discount(products: list, discount: float, subtotal: float) -> list:
-    """Taiko bendrą nuolaidą produktams proporcingai pagal jų vertę."""
+    """
+    Taiko nuolaidą produktams.
+    1. Jei produktas jau turi 'discount_percentage' iš sąskaitos (Google Document AI), naudoja tą.
+    2. Priešingu atveju, taiko bendrą nuolaidą proporcingai pagal produkto vertę.
+    """
     if not products:
         return products
+    
+    # Tikrina ar bent vienas produktas turi per-product discount_percentage iš sąskaitos
+    has_per_product_discount = any(
+        try_convert_to_float(p.get('discount_percentage')) is not None and 
+        try_convert_to_float(p.get('discount_percentage')) > 0 
+        for p in products
+    )
+    
+    if has_per_product_discount:
+        # Naudojame per-product nuolaidą iš sąskaitos (CS % stulpelis)
+        # SVARBU: Sąskaitoje 'amount' jau yra SU nuolaida, o 'unit_price' yra BE nuolaidos
+        # Todėl tikroji kaina po nuolaidos = amount / quantity
+        logging.info("Naudojama per-product nuolaida iš sąskaitos (discount_percentage)")
+        processed = []
+        for p_dict in products:
+            p = p_dict.copy()
+            p['unit_price_original'] = p.get('unit_price')
+            
+            original_amount = try_convert_to_float(p.get('amount')) or 0
+            quantity = try_convert_to_float(p.get('quantity')) or 0
+            unit_price = try_convert_to_float(p.get('unit_price')) or 0
+            
+            # Produkto nuolaidos procentas iš sąskaitos
+            product_discount_pct = try_convert_to_float(p.get('discount_percentage')) or 0
+            
+            if product_discount_pct > 0 and quantity > 0 and original_amount > 0:
+                # Sąskaitoje 'amount' jau yra po nuolaidos, todėl skaičiuojame tikrąją vieneto kainą
+                new_unit_price = original_amount / quantity
+                
+                p['unit_price_with_discount'] = new_unit_price
+                p['amount_with_discount'] = original_amount  # Jau su nuolaida
+                logging.info(f"Produktui '{p.get('name', '')[:30]}' {product_discount_pct}% nuolaida: vnt.kaina {unit_price:.2f} -> {new_unit_price:.2f}")
+            else:
+                # Nuolaidos nėra šiam produktui
+                p['unit_price_with_discount'] = unit_price
+                p['amount_with_discount'] = original_amount
+            
+            processed.append(p)
+        
+        return processed
     
     # Jei nuolaidos nėra, priskiriam originalias kainas ir grąžinam
     if not discount or discount <= 0:

@@ -116,6 +116,14 @@ PACKAGING_KEYWORDS = [
     'wooden box', 'wood box', 'packaging', 'pakuotė'
 ]
 
+# Paletės išmatavimai ir tipai - neturėtų būti produktai
+PALLET_DIMENSION_KEYWORDS = [
+    'eur 80', 'eur80', '80x120', '120x80', '800x1200', '1200x800',
+    'euro pallet', 'europallet', 'euro-pallet', 'epal', 'eur-epal',
+    'ippc', 'ispm15', 'fumigated', 'heat treated', 'ht stamp',
+    '80 x 120', '120 x 80', 'pallet size', 'pallet dimension'
+]
+
 NON_ALCOHOLIC_DRINK_KEYWORDS = [
     'alcohol free', 'alcohol-free', 'alcoholvrij', 'alkoholfrei', 'sans alcool', 'senza alcol', 'sin alcohol', 'nealkoholinis', 'no alcohol'
 ]
@@ -767,10 +775,12 @@ def extract_line_items_from_doc_ai(document) -> list:
             
     # 2. Filtruojame aktualius tipus
     # FIX: Added lowercase 'volume' since Google may return it with different casing
+    # FIX: Added 'discount_percentage' to capture per-product discount (CS % column)
     relevant_types = [
         'product_name', 'product_code', 'quantity', 'unit_price', 'amount', 'Volume', 'volume', 'abv', 'description',
         'line_item/description', 'line_item/product_code', 'line_item/quantity', 'line_item/unit_price', 
-        'line_item/amount', 'line_item/volume', 'line_item/abv'
+        'line_item/amount', 'line_item/volume', 'line_item/abv',
+        'discount_percentage', 'line_item/discount_percentage'
     ]
     
     # DEBUG: Log all entity types returned by Google
@@ -781,6 +791,21 @@ def extract_line_items_from_doc_ai(document) -> list:
             for prop in entity.properties:
                 all_entity_types.add(prop.type_)
     logging.info(f"DEBUG: All entity types from Google: {sorted(all_entity_types)}")
+    
+    # DEBUG: Check discount_percentage entities specifically
+    discount_entities = [e for e in flat_entities if e.type_ == 'discount_percentage']
+    logging.info(f"DEBUG: Found {len(discount_entities)} discount_percentage entities")
+    for de in discount_entities:
+        has_page_refs = bool(de.page_anchor.page_refs) if hasattr(de, 'page_anchor') and de.page_anchor else False
+        logging.info(f"DEBUG: discount_percentage entity: text='{de.mention_text}', has_page_refs={has_page_refs}")
+        if has_page_refs:
+            try:
+                page_ref = de.page_anchor.page_refs[0]
+                vertices = page_ref.bounding_poly.normalized_vertices
+                y_avg = sum(v.y for v in vertices) / len(vertices)
+                logging.info(f"DEBUG: discount_percentage Y-coord: {y_avg:.4f}")
+            except Exception as ex:
+                logging.info(f"DEBUG: discount_percentage coords error: {ex}")
     
     all_entities = [
         e for e in flat_entities 
@@ -986,6 +1011,26 @@ def extract_line_items_from_doc_ai(document) -> list:
              val = abv_ent.normalized_value.text if hasattr(abv_ent, 'normalized_value') and abv_ent.normalized_value else abv_ent.mention_text
              product['abv'] = clean_and_convert_to_float(val)
 
+        # Discount Percentage (CS % column)
+        discount_ent = next((e for e in row_entities if e.type_ in ['discount_percentage', 'line_item/discount_percentage']), None)
+        if discount_ent:
+             val = discount_ent.normalized_value.text if hasattr(discount_ent, 'normalized_value') and discount_ent.normalized_value else discount_ent.mention_text
+             product['discount_percentage'] = clean_and_convert_to_float(val)
+             logging.info(f"Discount percentage extracted for '{product.get('name', 'NO_NAME')[:30]}': {product['discount_percentage']}%")
+        else:
+             # Fallback: bandome ištraukti nuolaidos procentą iš eilutės teksto
+             # Nes Google Document AI gali neištraukti visų discount_percentage entitetų
+             try:
+                 row_text = extract_all_text_in_range(document, product.get('_meta_page', 0), product.get('_meta_y', 0), tolerance=0.02)
+                 # Ieškome nuolaidos procento pattern: skaičius prieš kainą (pvz. "40,00 5,200" arba "40.00 5.200")
+                 # Tipinės reikšmės: 40,00 arba 50,00 (nuolaidos procentas)
+                 discount_from_text = extract_discount_percentage_from_text(row_text, product)
+                 if discount_from_text is not None and discount_from_text > 0:
+                     product['discount_percentage'] = discount_from_text
+                     logging.info(f"Discount percentage extracted from TEXT for '{product.get('name', 'NO_NAME')[:30]}': {discount_from_text}%")
+             except Exception as e:
+                 logging.warning(f"Nepavyko ištraukti nuolaidos iš teksto: {e}")
+
         # --- LOGIKA IŠ SENOS FUNKCIJOS (Packaging, Ghost, Volume/ABV recovery) ---
         
         # 1. Packaging check
@@ -995,6 +1040,30 @@ def extract_line_items_from_doc_ai(document) -> list:
         
         full_line_lower = full_line_text.lower()
         name_lower = product.get('name', '').lower()
+        
+        # Paletės išmatavimų / tipo patikrinimas - šios eilutės NETURĖTŲ būti produktai
+        # Pvz. "EUR 80", "80x120", "EPAL", "IPPC" ir pan.
+        is_pallet_dimension = any(k in name_lower for k in PALLET_DIMENSION_KEYWORDS) or \
+                              any(k in full_line_lower for k in PALLET_DIMENSION_KEYWORDS)
+        
+        # Papildomas patikrinimas: jei pavadinimas atrodo kaip paletės išmatavimai (pvz. "EUR 80" su 2 vnt.)
+        # Tipinis paletės duomenų požymis: trumpas pavadinimas + mažas kiekis (1-5) + nėra ABV/tūrio
+        if not is_pallet_dimension:
+            # Tikriname ar tai gali būti paletės eilutė
+            name_words = name_lower.split()
+            has_eur = 'eur' in name_words or 'euro' in name_words
+            has_dimension_number = any(w in ['80', '120', '800', '1200'] for w in name_words)
+            small_qty = (product.get('quantity', 0) or 0) <= 5
+            no_abv = not product.get('abv') or product.get('abv') == 0
+            no_volume = not product.get('volume') or product.get('volume') == 0
+            
+            if has_eur and has_dimension_number and small_qty and no_abv and no_volume:
+                is_pallet_dimension = True
+                logging.info(f"Eilutė atpažinta kaip paletės duomenys pagal pattern (EUR + dimensija): '{product.get('name')}'")
+        
+        if is_pallet_dimension:
+            logging.info(f"Eilutė ignoruojama kaip paletės išmatavimai/tipas: '{product.get('name')}'")
+            continue
         
         # Discount check
         if any(k in full_line_lower for k in ['discount', 'nuolaida', 'rebate']) or \
@@ -1677,7 +1746,8 @@ def extract_invoice_data(file_path: str, manual_transport: float = 0.0) -> dict:
                 'unit_price': clean_and_convert_to_float(item_data.get('unit_price')),
                 'amount': clean_and_convert_to_float(item_data.get('amount')),
                 'volume': clean_and_convert_to_float(item_data.get('volume')),
-                'abv': final_abv
+                'abv': final_abv,
+                'discount_percentage': clean_and_convert_to_float(item_data.get('discount_percentage')) or 0.0
             }
             
             # DEBUG: Log volume info
@@ -1704,6 +1774,58 @@ def extract_invoice_data(file_path: str, manual_transport: float = 0.0) -> dict:
     except Exception as e:
         logging.error(f"AI_INVOICE.PY - Netikėta klaida `extract_invoice_data`: {e}", exc_info=True)
         return {'error': f'Sistemos klaida: {str(e)}', 'products': [], 'summary': {'discount_amount': 0.0, 'transport_amount': 0.0}}
+
+def extract_discount_percentage_from_text(text: str, product: dict) -> Optional[float]:
+    """
+    Bando ištraukti nuolaidos procentą iš eilutės teksto.
+    Sąskaitose nuolaidos procentas dažnai yra "SC %" arba "CS %" stulpelyje.
+    Tipinės reikšmės: 40,00 arba 50,00 (nuolaidos procentas prieš vieneto kainą).
+    """
+    if not text:
+        return None
+    
+    try:
+        # Pašaliname produkto pavadinimą iš teksto, kad nepainioti su kitais skaičiais
+        product_name = product.get('name', '')
+        if product_name:
+            text = text.replace(product_name, '')
+        
+        unit_price = product.get('unit_price')
+        amount = product.get('amount')
+        quantity = product.get('quantity')
+        
+        # Ieškome visų skaičių su kableliais/taškais formatu XX,XX arba XX.XX
+        # Nuolaidos procentas paprastai yra apvalus skaičius kaip 40,00 arba 50,00
+        pattern = r'(\d{1,2})[,.](\d{2})\b'
+        matches = re.findall(pattern, text)
+        
+        for match in matches:
+            try:
+                val = float(f"{match[0]}.{match[1]}")
+                
+                # Nuolaidos procentas turi būti tarp 1 ir 99
+                if 1 <= val <= 99:
+                    # Patikriname ar tai nėra kaina, kiekis ar suma
+                    if unit_price and abs(val - unit_price) < 0.01:
+                        continue
+                    if amount and abs(val - amount) < 0.01:
+                        continue
+                    if quantity and abs(val - quantity) < 0.01:
+                        continue
+                    
+                    # Tipinės nuolaidos: 5, 10, 15, 20, 25, 30, 35, 40, 45, 50%
+                    # Šioje sąskaitoje matome 40,00 - tai tikrai nuolaidos procentas
+                    if val in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50] or val == round(val):
+                        logging.info(f"Rastas galimas nuolaidos procentas tekste: {val}%")
+                        return val
+            except ValueError:
+                continue
+        
+        return None
+        
+    except Exception as e:
+        logging.warning(f"Klaida traukiant nuolaidos procentą iš teksto: {e}")
+        return None
 
 def extract_all_text_in_range(document, page_index, y_center, tolerance=0.05) -> str:
     """Ištraukia visą tekstą iš nurodyto vertikalaus diapazono, sujungdamas visas eilutes."""
